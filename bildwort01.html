@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch A1 - Bild-Genus-Matching</title>
+    
+    <style>
+        :root {
+            --primary: #2e7d32; /* Dunkelgrün */
+            --primary-light: #e8f5e9;
+            --bg-color: #f1f8e9;
+            --surface: #ffffff;
+            --text: #333;
+            --border-radius: 12px;
+            --success: #43a047;
+            --error: #e53935;
+            
+            /* Gender Farben für Feedback */
+            --color-on: #1976d2; /* Blau */
+            --color-ona: #d32f2f; /* Rot */
+            --color-ono: #388e3c; /* Grün */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: var(--surface);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-bottom: 4px solid var(--primary);
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        p.instruction {
+            color: #666;
+            margin-top: 10px;
+        }
+
+        /* Grid Layout für die Karten */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* Einzelne Karte */
+        .card {
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .emoji-img {
+            font-size: 4.5rem;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .german-word {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        /* Auswahl-Buttons in der Karte */
+        .choice-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 5px;
+        }
+
+        .choice-btn {
+            flex: 1;
+            padding: 8px 0;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: #fff;
+            cursor: pointer;
+            font-weight: bold;
+            color: #777;
+            transition: all 0.2s;
+        }
+
+        .choice-btn:hover {
+            border-color: #aaa;
+            background: #f9f9f9;
+        }
+
+        /* Aktiver Zustand (vom User gewählt) */
+        .choice-btn.selected {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Korrektur-Zustände */
+        .choice-btn.correct-answer {
+            background-color: var(--success) !important;
+            color: white !important;
+            border-color: var(--success) !important;
+            box-shadow: 0 0 8px rgba(67, 160, 71, 0.5);
+        }
+
+        .choice-btn.wrong-choice {
+            background-color: var(--error) !important;
+            color: white !important;
+            border-color: var(--error) !important;
+            opacity: 0.5;
+        }
+
+        /* Wenn Lösung angezeigt wird (nicht gewählt, aber richtig) */
+        .choice-btn.solution-mark {
+            border: 3px solid var(--success);
+            color: var(--success);
+            font-weight: 900;
+        }
+
+        /* Feedback Text unter den Buttons */
+        .card-feedback {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            min-height: 1.2em;
+            font-weight: bold;
+        }
+
+        /* Globale Steuerung */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background: var(--surface);
+            border-radius: var(--border-radius);
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
+            flex-wrap: wrap;
+        }
+
+        button.main-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: filter 0.2s;
+            color: white;
+        }
+
+        button.main-btn:hover { filter: brightness(1.1); }
+        
+        .btn-check { background-color: var(--primary); }
+        .btn-reset { background-color: #757575; }
+        .btn-solve { background-color: #ffa726; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Bild-Wort-Matching 🖼️</h1>
+        <p class="instruction">
+            Welches Geschlecht haben diese Dinge auf Russisch?<br>
+            Du siehst nur das Bild und das deutsche Wort. Wähle: <strong>ОН</strong>, <strong>ОНА</strong> oder <strong>ОНО</strong>.
+        </p>
+    </header>
+
+    <div class="grid" id="cardGrid">
+        <!-- Karten werden per JavaScript generiert -->
+    </div>
+
+    <div class="controls">
+        <button class="main-btn btn-check" onclick="checkAll()">Überprüfen</button>
+        <button class="main-btn btn-reset" onclick="resetAll()">Zurücksetzen</button>
+        <button class="main-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    // Datenbasis: Bild, Deutsches Wort, Russisches Wort (als Hilfe für Lösung), Richtiges Genus
+    const items = [
+        { emoji: "🏠", de: "das Haus", ru: "Дом", gender: "on" },
+        { emoji: "☕", de: "der Kaffee", ru: "Кофе", gender: "on", hint: "Ausnahme!" },
+        { emoji: "🪟", de: "das Fenster", ru: "Окно", gender: "ono" },
+        { emoji: "💡", de: "die Lampe", ru: "Лампа", gender: "ona" },
+        { emoji: "👨", de: "der Papa", ru: "Папа", gender: "on", hint: "Natürliches Geschlecht" },
+        { emoji: "🚇", de: "die U-Bahn", ru: "Метро", gender: "ono" },
+        { emoji: "📖", de: "das Buch", ru: "Книга", gender: "ona" },
+        { emoji: "🌧️", de: "der Regen", ru: "Дождь", gender: "on", hint: "Weichheitszeichen (-ь)" },
+        { emoji: "🐁", de: "die Maus", ru: "Мышь", gender: "ona", hint: "Weichheitszeichen (-ь)" },
+        { emoji: "☀️", de: "die Sonne", ru: "Солнце", gender: "ono" },
+        { emoji: "🎸", de: "die Musik", ru: "Музыка", gender: "ona" },
+        { emoji: "🏨", de: "das Hotel", ru: "Отель", gender: "on", hint: "Fremdwort auf Konsonant" }
+    ];
+
+    const grid = document.getElementById('cardGrid');
+
+    // Initialisierung: Karten erstellen
+    function init() {
+        grid.innerHTML = '';
+        items.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.id = `card-${index}`;
+            card.innerHTML = `
+                <div>
+                    <span class="emoji-img">${item.emoji}</span>
+                    <div class="german-word">${item.de}</div>
+                </div>
+                <div>
+                    <div class="choice-container">
+                        <button class="choice-btn" onclick="select(this, ${index}, 'on')">ОН</button>
+                        <button class="choice-btn" onclick="select(this, ${index}, 'ona')">ОНА</button>
+                        <button class="choice-btn" onclick="select(this, ${index}, 'ono')">ОНО</button>
+                    </div>
+                    <div class="card-feedback" id="feedback-${index}"></div>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // Status speichern
+    let userSelections = {};
+
+    function select(btn, index, choice) {
+        // Buttons in dieser Karte zurücksetzen
+        const container = btn.parentElement;
+        const buttons = container.querySelectorAll('.choice-btn');
+        buttons.forEach(b => b.classList.remove('selected', 'correct-answer', 'wrong-choice', 'solution-mark'));
+        
+        // Feedback leeren
+        document.getElementById(`feedback-${index}`).innerText = '';
+        document.getElementById(`feedback-${index}`).style.color = 'inherit';
+
+        // Auswahl setzen
+        btn.classList.add('selected');
+        userSelections[index] = choice;
+    }
+
+    function checkAll() {
+        let correctCount = 0;
+        let answeredCount = 0;
+
+        items.forEach((item, index) => {
+            const userChoice = userSelections[index];
+            const feedbackEl = document.getElementById(`feedback-${index}`);
+            const card = document.getElementById(`card-${index}`);
+            const buttons = card.querySelectorAll('.choice-btn');
+
+            // Reset visual feedback classes first
+            buttons.forEach(b => b.classList.remove('correct-answer', 'wrong-choice'));
+
+            if (userChoice) {
+                answeredCount++;
+                // Button finden, der gewählt wurde
+                let selectedBtn;
+                if (userChoice === 'on') selectedBtn = buttons[0];
+                if (userChoice === 'ona') selectedBtn = buttons[1];
+                if (userChoice === 'ono') selectedBtn = buttons[2];
+
+                if (userChoice === item.gender) {
+                    correctCount++;
+                    selectedBtn.classList.add('correct-answer');
+                    feedbackEl.innerText = `Richtig! (${item.ru})`;
+                    feedbackEl.style.color = "var(--success)";
+                } else {
+                    selectedBtn.classList.add('wrong-choice');
+                    feedbackEl.innerText = "Falsch";
+                    feedbackEl.style.color = "var(--error)";
+                }
+            } else {
+                feedbackEl.innerText = "Bitte wählen!";
+                feedbackEl.style.color = "#ffa726";
+            }
+        });
+    }
+
+    function resetAll() {
+        userSelections = {};
+        const buttons = document.querySelectorAll('.choice-btn');
+        buttons.forEach(b => b.classList.remove('selected', 'correct-answer', 'wrong-choice', 'solution-mark'));
+        
+        const feedbacks = document.querySelectorAll('.card-feedback');
+        feedbacks.forEach(f => f.innerText = '');
+    }
+
+    function showSolution() {
+        // Erst Reset, um Konflikte zu vermeiden
+        resetAll();
+
+        items.forEach((item, index) => {
+            const card = document.getElementById(`card-${index}`);
+            const buttons = card.querySelectorAll('.choice-btn');
+            const feedbackEl = document.getElementById(`feedback-${index}`);
+
+            // Richtigen Button finden
+            let correctBtn;
+            if (item.gender === 'on') correctBtn = buttons[0];
+            if (item.gender === 'ona') correctBtn = buttons[1];
+            if (item.gender === 'ono') correctBtn = buttons[2];
+
+            correctBtn.classList.add('solution-mark');
+            
+            // Hinweis anzeigen
+            let msg = item.ru;
+            if (item.hint) msg += ` (${item.hint})`;
+            feedbackEl.innerText = msg;
+            feedbackEl.style.color = "#555";
+        });
+    }
+
+    // Start
+    init();
+
+</script>
+
+</body>
+</html>
+44,4s
+Use Arrow Up and Arrow Down to select a turn, Enter to jump to it, and Escape to return to the chat.
