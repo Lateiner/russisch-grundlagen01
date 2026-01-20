@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch A1 - Der Fehlerteufel</title>
+    
+    <style>
+        :root {
+            --primary: #2e7d32; /* Dunkelgrün */
+            --primary-light: #4caf50;
+            --bg-color: #e8f5e9; /* Helles Grün */
+            --surface: #ffffff;
+            --text: #333;
+            --border-radius: 8px;
+            --success: #66bb6a;
+            --error: #ef5350;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--surface);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        p.instruction {
+            color: #666;
+            text-align: center;
+        }
+
+        /* Aufgaben-Box */
+        .task-row {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .task-title {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        /* Der Satz mit dem Fehler */
+        .sentence-box {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        /* Stil für den Fehler im Text */
+        .error-spot {
+            color: #c62828;
+            font-weight: bold;
+            text-decoration: line-through;
+            margin-right: 5px;
+        }
+
+        .gap {
+            display: inline-block;
+            border-bottom: 2px solid #333;
+            min-width: 60px;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* Optionen Container */
+        .options-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .option-btn {
+            flex: 1;
+            min-width: 100px;
+            max-width: 200px;
+            padding: 10px 15px;
+            background-color: white;
+            border: 2px solid #ccc;
+            border-radius: 30px; /* Runder für Optionen */
+            cursor: pointer;
+            font-size: 1.1rem;
+            text-align: center;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary);
+            background-color: #f1f8e9;
+        }
+
+        /* Status Klassen */
+        .option-btn.selected {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .option-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: white !important;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--error) !important;
+            border-color: var(--error) !important;
+            color: white !important;
+            opacity: 0.8;
+        }
+
+        .option-btn.missed {
+            border: 3px solid var(--success) !important;
+            color: var(--primary) !important;
+            background-color: #fff !important;
+            font-weight: bold;
+        }
+
+        .feedback-text {
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            min-height: 1.5em;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        /* Controls */
+        .row-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            flex-wrap: wrap;
+        }
+
+        button.ctrl-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: opacity 0.2s;
+        }
+
+        button.ctrl-btn:hover { opacity: 0.9; }
+
+        .btn-check { background-color: var(--primary); color: white; }
+        .btn-reset { background-color: #9e9e9e; color: white; }
+        .btn-solve { background-color: #ffa726; color: white; }
+
+        @media (max-width: 600px) {
+            .options-container { flex-direction: column; align-items: center; }
+            .option-btn { width: 100%; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Der Fehlerteufel 😈</h1>
+        <p class="instruction">In jedem Satz hat sich ein Fehler beim Geschlecht eingeschlichen.<br>Markiere die <strong>richtige Korrektur</strong>.</p>
+    </header>
+
+    <!-- Aufgabe 1: Possessivpronomen + Feminin -->
+    <div class="task-row" id="row1" data-solution="1">
+        <div class="task-title">1. Possessivpronomen</div>
+        <div class="sentence-box">
+            Это <span class="error-spot">мой</span> сестра.
+        </div>
+        <p style="text-align: center; margin-top: -15px; color: #666; font-size: 0.9rem;">(Das ist meine Schwester.)</p>
+        
+        <div class="options-container">
+            <div class="option-btn" onclick="selectOption(1, 0)">мой</div>
+            <div class="option-btn" onclick="selectOption(1, 1)">моя</div>
+            <div class="option-btn" onclick="selectOption(1, 2)">моё</div>
+        </div>
+        <div class="feedback-text" id="feedback1"></div>
+
+        <div class="row-controls">
+            <button class="ctrl-btn btn-check" onclick="checkRow(1)">Überprüfen</button>
+            <button class="ctrl-btn btn-reset" onclick="resetRow(1)">Zurücksetzen</button>
+            <button class="ctrl-btn btn-solve" onclick="solveRow(1)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 2: Personalpronomen + Stadt -->
+    <div class="task-row" id="row2" data-solution="2">
+        <div class="task-title">2. Personalpronomen</div>
+        <div class="sentence-box">
+            Москва там. <span class="error-spot">Он</span> красивая.
+        </div>
+        <p style="text-align: center; margin-top: -15px; color: #666; font-size: 0.9rem;">(Moskau ist dort. Sie ist schön.)</p>
+
+        <div class="options-container">
+            <div class="option-btn" onclick="selectOption(2, 0)">Оно</div>
+            <div class="option-btn" onclick="selectOption(2, 1)">Он</div>
+            <div class="option-btn" onclick="selectOption(2, 2)">Она</div>
+        </div>
+        <div class="feedback-text" id="feedback2"></div>
+
+        <div class="row-controls">
+            <button class="ctrl-btn btn-check" onclick="checkRow(2)">Überprüfen</button>
+            <button class="ctrl-btn btn-reset" onclick="resetRow(2)">Zurücksetzen</button>
+            <button class="ctrl-btn btn-solve" onclick="solveRow(2)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 3: Neutrum auf -о -->
+    <div class="task-row" id="row3" data-solution="0">
+        <div class="task-title">3. Sächliches Geschlecht</div>
+        <div class="sentence-box">
+            Вот письмо. <span class="error-spot">Она</span> тут.
+        </div>
+        <p style="text-align: center; margin-top: -15px; color: #666; font-size: 0.9rem;">(Hier ist der Brief. Er [Es] ist hier.)</p>
+
+        <div class="options-container">
+            <div class="option-btn" onclick="selectOption(3, 0)">Оно</div>
+            <div class="option-btn" onclick="selectOption(3, 1)">Она</div>
+            <div class="option-btn" onclick="selectOption(3, 2)">Он</div>
+        </div>
+        <div class="feedback-text" id="feedback3"></div>
+
+        <div class="row-controls">
+            <button class="ctrl-btn btn-check" onclick="checkRow(3)">Überprüfen</button>
+            <button class="ctrl-btn btn-reset" onclick="resetRow(3)">Zurücksetzen</button>
+            <button class="ctrl-btn btn-solve" onclick="solveRow(3)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 4: Ausnahme (natürliches Geschlecht) -->
+    <div class="task-row" id="row4" data-solution="2">
+        <div class="task-title">4. Ausnahme: Natürliches Geschlecht</div>
+        <div class="sentence-box">
+            Где папа? <span class="error-spot">Она</span> дома.
+        </div>
+        <p style="text-align: center; margin-top: -15px; color: #666; font-size: 0.9rem;">(Wo ist Papa? Er ist zu Hause.)</p>
+
+        <div class="options-container">
+            <div class="option-btn" onclick="selectOption(4, 0)">Оно</div>
+            <div class="option-btn" onclick="selectOption(4, 1)">Она</div>
+            <div class="option-btn" onclick="selectOption(4, 2)">Он</div>
+        </div>
+        <div class="feedback-text" id="feedback4"></div>
+
+        <div class="row-controls">
+            <button class="ctrl-btn btn-check" onclick="checkRow(4)">Überprüfen</button>
+            <button class="ctrl-btn btn-reset" onclick="resetRow(4)">Zurücksetzen</button>
+            <button class="ctrl-btn btn-solve" onclick="solveRow(4)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Aufgabe 5: Ausnahme (Kaffee) -->
+    <div class="task-row" id="row5" data-solution="0">
+        <div class="task-title">5. Ausnahme: Kaffee</div>
+        <div class="sentence-box">
+            Кофе вкусное (<span class="error-spot">оно</span>).
+        </div>
+        <p style="text-align: center; margin-top: -15px; color: #666; font-size: 0.9rem;">(Der Kaffee ist lecker.)</p>
+
+        <div class="options-container">
+            <div class="option-btn" onclick="selectOption(5, 0)">вкусный (он)</div>
+            <div class="option-btn" onclick="selectOption(5, 1)">вкусное (оно)</div>
+            <div class="option-btn" onclick="selectOption(5, 2)">вкусная (она)</div>
+        </div>
+        <div class="feedback-text" id="feedback5"></div>
+
+        <div class="row-controls">
+            <button class="ctrl-btn btn-check" onclick="checkRow(5)">Überprüfen</button>
+            <button class="ctrl-btn btn-reset" onclick="resetRow(5)">Zurücksetzen</button>
+            <button class="ctrl-btn btn-solve" onclick="solveRow(5)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Speichern der Auswahl
+    var userSelections = {};
+
+    // Erklärungen
+    var explanations = {
+        1: "„Сестра“ (Schwester) endet auf -а und ist weiblich. Richtig ist: <strong>моя</strong>.",
+        2: "„Москва“ endet auf -а und ist weiblich. Das Pronomen ist <strong>Она</strong>.",
+        3: "„Письмо“ (Brief) endet auf -о und ist sächlich. Das Pronomen ist <strong>Оно</strong>.",
+        4: "„Папа“ endet auf -а, ist aber ein Mann (natürliches Geschlecht). Richtig ist <strong>Он</strong>.",
+        5: "„Кофе“ ist eine wichtige Ausnahme und immer männlich! Richtig ist <strong>он</strong> (вкусный)."
+    };
+
+    function selectOption(rowNum, index) {
+        var row = document.getElementById('row' + rowNum);
+        var buttons = row.querySelectorAll('.option-btn');
+        
+        // Reset Visuals
+        for (var i = 0; i < buttons.length; i++) {
+            buttons[i].classList.remove('selected', 'correct', 'wrong', 'missed');
+        }
+        
+        // Set Selected
+        buttons[index].classList.add('selected');
+        userSelections[rowNum] = index;
+
+        // Reset Feedback
+        var fb = document.getElementById('feedback' + rowNum);
+        fb.textContent = '';
+        fb.style.backgroundColor = 'transparent';
+    }
+
+    function checkRow(rowNum) {
+        var row = document.getElementById('row' + rowNum);
+        var correctIndex = parseInt(row.getAttribute('data-solution'));
+        var selectedIndex = userSelections[rowNum];
+        var feedbackBox = document.getElementById('feedback' + rowNum);
+        var buttons = row.querySelectorAll('.option-btn');
+
+        // Reset status visuals (keep selected)
+        for (var j = 0; j < buttons.length; j++) {
+            buttons[j].classList.remove('correct', 'wrong', 'missed');
+        }
+
+        if (selectedIndex === undefined) {
+            feedbackBox.textContent = "Bitte wähle eine Korrektur aus.";
+            feedbackBox.style.color = "#d84315";
+            feedbackBox.style.backgroundColor = "#fbe9e7";
+            return;
+        }
+
+        if (selectedIndex === correctIndex) {
+            buttons[selectedIndex].classList.add('correct');
+            feedbackBox.innerHTML = "Richtig! " + explanations[rowNum];
+            feedbackBox.style.color = "#1b5e20";
+            feedbackBox.style.backgroundColor = "#e8f5e9";
+        } else {
+            buttons[selectedIndex].classList.add('wrong');
+            feedbackBox.textContent = "Leider falsch. Versuche es noch einmal.";
+            feedbackBox.style.color = "#b71c1c";
+            feedbackBox.style.backgroundColor = "#ffebee";
+        }
+    }
+
+    function resetRow(rowNum) {
+        delete userSelections[rowNum];
+        var row = document.getElementById('row' + rowNum);
+        var buttons = row.querySelectorAll('.option-btn');
+        var feedbackBox = document.getElementById('feedback' + rowNum);
+        
+        for (var j = 0; j < buttons.length; j++) {
+            buttons[j].classList.remove('selected', 'correct', 'wrong', 'missed');
+        }
+        feedbackBox.textContent = '';
+        feedbackBox.style.backgroundColor = 'transparent';
+    }
+
+    function solveRow(rowNum) {
+        resetRow(rowNum);
+        var row = document.getElementById('row' + rowNum);
+        var correctIndex = parseInt(row.getAttribute('data-solution'));
+        var buttons = row.querySelectorAll('.option-btn');
+        var feedbackBox = document.getElementById('feedback' + rowNum);
+
+        buttons[correctIndex].classList.add('missed');
+        feedbackBox.innerHTML = "Lösung: " + explanations[rowNum];
+        feedbackBox.style.color = "#333";
+        feedbackBox.style.backgroundColor = "#f0f0f0";
+    }
+</script>
+
+</body>
+</html>
