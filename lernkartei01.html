@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch Vokabeltrainer A1</title>
+    <style>
+        :root {
+            /* Grünes Farbschema */
+            --primary-color: #2e7d32; /* Dunkelgrün */
+            --primary-hover: #1b5e20;
+            --background-color: #e8f5e9; /* Sehr helles Grün */
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --secondary-text: #666666;
+            --shadow: 0 4px 15px rgba(0,0,0,0.1);
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+
+        .subtitle {
+            color: var(--secondary-text);
+            font-size: 0.9rem;
+        }
+
+        /* Hauptcontainer */
+        .main-container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Fortschrittsanzeige */
+        .progress-container {
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary-color);
+            background: white;
+            padding: 10px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            align-self: center;
+            min-width: 100px;
+        }
+
+        /* 3D Karten Bereich */
+        .scene {
+            width: 100%;
+            height: 300px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden; /* Wichtig: Versteckt die Rückseite */
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border: 2px solid #a5d6a7; /* Hellgrüner Rand */
+        }
+
+        .card-face.card-back {
+            transform: rotateY(180deg);
+            background-color: #f1f8e9; /* Leicht anderer Ton für Rückseite */
+            border-color: var(--primary-color);
+        }
+
+        /* Text Styling auf der Karte */
+        .lang-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-bottom: 15px;
+            position: absolute;
+            top: 20px;
+        }
+
+        .vocab-word {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--text-color);
+            word-wrap: break-word;
+            max-width: 100%;
+        }
+
+        .card-back .vocab-word {
+            color: var(--primary-color);
+        }
+
+        /* Dynamische Schriftgröße für lange Wörter */
+        .vocab-word.long-text { font-size: 1.8rem; }
+        .vocab-word.very-long-text { font-size: 1.4rem; }
+
+        .hint {
+            position: absolute;
+            bottom: 15px;
+            font-size: 0.8rem;
+            color: #999;
+            opacity: 0.7;
+        }
+
+        /* Steuerungselemente */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .nav-buttons {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .action-buttons {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            flex: 1;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: #66bb6a;
+        }
+        .btn-secondary:hover {
+            background-color: #4caf50;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+        .btn-outline:hover {
+            background-color: #e8f5e9;
+        }
+
+        /* Keyboard Shortcuts Legende */
+        .shortcuts {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: var(--secondary-text);
+            text-align: center;
+            background: rgba(255,255,255,0.5);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .key {
+            display: inline-block;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: monospace;
+            margin: 0 2px;
+            font-weight: bold;
+            box-shadow: 0 2px 0 #ccc;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            h1 { font-size: 1.5rem; }
+            .scene { height: 240px; }
+            .vocab-word { font-size: 2rem; }
+            button { font-size: 0.9rem; padding: 10px; }
+            .controls { gap: 10px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Russisch A1</h1>
+        <div class="subtitle">Bestimmung des Geschlechts russischer Substantive</div>
+    </header>
+
+    <div class="main-container">
+        
+        <div class="progress-container" id="progressDisplay">
+            1 / 71
+        </div>
+
+        <div class="scene" id="cardScene">
+            <div class="card" id="flashcard">
+                <!-- Vorderseite (Russisch) -->
+                <div class="card-face card-front">
+                    <span class="lang-label">Russisch</span>
+                    <div class="vocab-word" id="wordFront">Lade...</div>
+                    <div class="hint">Klicken zum Umdrehen</div>
+                </div>
+                <!-- Rückseite (Deutsch) -->
+                <div class="card-face card-back">
+                    <span class="lang-label">Deutsch</span>
+                    <div class="vocab-word" id="wordBack">...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <!-- Navigation -->
+            <div class="nav-buttons">
+                <button id="btnPrev" onclick="prevCard()">← Vorherige</button>
+                <button id="btnNext" onclick="nextCard()">Nächste →</button>
+            </div>
+
+            <!-- Funktionen -->
+            <div class="action-buttons">
+                <button class="btn-outline" id="btnReset" onclick="resetToStart()" title="Zurück zum Anfang (Pos1)">
+                    Start
+                </button>
+                <button class="btn-secondary" id="btnShuffle" onclick="shuffleCards()" title="Karten mischen">
+                    Mischen 🔀
+                </button>
+            </div>
+        </div>
+
+        <div class="shortcuts">
+            Tastatur: 
+            <span class="key">Leertaste</span> / <span class="key">Enter</span> = Drehen | 
+            <span class="key">←</span> <span class="key">→</span> = Navigation | 
+            <span class="key">Pos1</span> = Start
+        </div>
+
+    </div>
+
+    <script>
+        // --- Datenbasis ---
+        // Liste basierend auf der Nutzereingabe
+        const vocabularyData = [
+            { ru: "аудито́рия", de: "der Hörsaal" },
+            { ru: "брат", de: "der Bruder" },
+            { ru: "газе́та", de: "die Zeitung" },
+            { ru: "гвоздь", de: "der Nagel" },
+            { ru: "го́лубь", de: "die Taube" },
+            { ru: "гость", de: "der Gast" },
+            { ru: "де́душка", de: "der Opa" },
+            { ru: "дека́брь", de: "der Dezember" },
+            { ru: "день", de: "der Tag" },
+            { ru: "дождь", de: "der Regen" },
+            { ru: "дом", de: "das Haus" },
+            { ru: "друг", de: "der Freund" },
+            { ru: "дя́дя", de: "der Onkel" },
+            { ru: "и́мя", de: "der Name" },
+            { ru: "ию́ль", de: "der Juli" },
+            { ru: "ию́нь", de: "der Juni" },
+            { ru: "кварти́ра", de: "die Wohnung" },
+            { ru: "кни́га", de: "das Buch" },
+            { ru: "кот", de: "der Kater" },
+            { ru: "ко́фе", de: "der Kaffee" },
+            { ru: "крова́ть", de: "das Bett" },
+            { ru: "ла́мпа", de: "die Lampe" },
+            { ru: "ле́бедь", de: "der Schwan" },
+            { ru: "любо́вь", de: "die Liebe" },
+            { ru: "май", de: "der Mai" },
+            { ru: "ма́ма", de: "die Mama" },
+            { ru: "ма́ркер", de: "der Marker (Stift)" },
+            { ru: "ме́бель", de: "die Möbel" },
+            { ru: "ме́сто", de: "der Ort / der Platz" },
+            { ru: "метро́", de: "die U-Bahn" },
+            { ru: "молоко́", de: "die Milch" },
+            { ru: "мо́ре", de: "das Meer" },
+            { ru: "мужчи́на", de: "der Mann" },
+            { ru: "музе́й", de: "das Museum" },
+            { ru: "му́зыка", de: "die Musik" },
+            { ru: "мышь", de: "die Maus" },
+            { ru: "но́вость", de: "die Neuigkeit / Nachricht" },
+            { ru: "ноябрь", de: "der November" },
+            { ru: "ночь", de: "die Nacht" },
+            { ru: "общежи́тие", de: "das Wohnheim" },
+            { ru: "одея́ло", de: "die Decke (Bettdecke)" },
+            { ru: "окно́", de: "das Fenster" },
+            { ru: "октя́брь", de: "der Oktober" },
+            { ru: "о́сень", de: "der Herbst" },
+            { ru: "па́па", de: "der Papa" },
+            { ru: "парк", de: "der Park" },
+            { ru: "пе́сня", de: "das Lied" },
+            { ru: "письмо́", de: "der Brief" },
+            { ru: "подру́га", de: "die Freundin" },
+            { ru: "по́мощь", de: "die Hilfe" },
+            { ru: "ра́дио", de: "das Radio" },
+            { ru: "Росси́я", de: "Russland" },
+            { ru: "рубль", de: "der Rubel" },
+            { ru: "санато́рий", de: "das Sanatorium" },
+            { ru: "сентя́брь", de: "der September" },
+            { ru: "семья́", de: "die Familie" },
+            { ru: "сестра́", de: "die Schwester" },
+            { ru: "Сиби́рь", de: "Sibirien" },
+            { ru: "слова́рь", de: "das Wörterbuch" },
+            { ru: "со́лнце", de: "die Sonne" },
+            { ru: "соль", de: "das Salz" },
+            { ru: "стол", de: "der Tisch" },
+            { ru: "студе́нт", de: "der Student" },
+            { ru: "тетра́дь", de: "das Heft" },
+            { ru: "тётя", de: "die Tante" },
+            { ru: "трамва́й", de: "die Straßenbahn" },
+            { ru: "учи́тель", de: "der Lehrer" },
+            { ru: "фасо́ль", de: "die Bohne" },
+            { ru: "фо́то", de: "das Foto" },
+            { ru: "чай", de: "der Tee" },
+            { ru: "шко́ла", de: "die Schule" }
+        ];
+
+        // --- Status Variablen ---
+        let currentStack = [...vocabularyData]; // Kopie zum Arbeiten (für Shuffle)
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        // --- DOM Elemente ---
+        const cardElement = document.getElementById('flashcard');
+        const cardScene = document.getElementById('cardScene');
+        const wordFront = document.getElementById('wordFront');
+        const wordBack = document.getElementById('wordBack');
+        const progressDisplay = document.getElementById('progressDisplay');
+
+        // --- Initialisierung ---
+        function init() {
+            renderCard();
+            setupEventListeners();
+        }
+
+        // --- Kernfunktionen ---
+
+        function renderCard() {
+            const data = currentStack[currentIndex];
+            
+            // Text setzen
+            wordFront.textContent = data.ru;
+            wordBack.textContent = data.de;
+
+            // Schriftgröße anpassen wenn Text zu lang ist
+            adjustFontSize(wordFront, data.ru);
+            adjustFontSize(wordBack, data.de);
+
+            // Fortschritt
+            progressDisplay.textContent = `${currentIndex + 1} / ${currentStack.length}`;
+
+            // Reset Flip wenn wir navigieren (aber nur wenn gerade geflippt)
+            if (isFlipped) {
+                cardElement.classList.remove('is-flipped');
+                isFlipped = false;
+            }
+        }
+
+        function adjustFontSize(element, text) {
+            // Klassen zurücksetzen
+            element.classList.remove('long-text', 'very-long-text');
+            
+            // Einfache Heuristik basierend auf Zeichenlänge
+            if (text.length > 20) {
+                element.classList.add('very-long-text');
+            } else if (text.length > 10) {
+                element.classList.add('long-text');
+            }
+        }
+
+        function flipCard() {
+            isFlipped = !isFlipped;
+            cardElement.classList.toggle('is-flipped');
+        }
+
+        function nextCard() {
+            if (currentIndex < currentStack.length - 1) {
+                // Kurze Verzögerung für Flip-Animation beim Wechsel, falls Karte gedreht ist
+                if (isFlipped) {
+                    flipCard();
+                    setTimeout(() => {
+                        currentIndex++;
+                        renderCard();
+                    }, 300);
+                } else {
+                    currentIndex++;
+                    renderCard();
+                }
+            } else {
+                // Optional: Loop zum Anfang? Hier: Stoppen oder visueller Hinweis
+                // Wir machen nichts oder wackeln kurz
+                shakeCard();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                if (isFlipped) {
+                    flipCard();
+                    setTimeout(() => {
+                        currentIndex--;
+                        renderCard();
+                    }, 300);
+                } else {
+                    currentIndex--;
+                    renderCard();
+                }
+            } else {
+                shakeCard();
+            }
+        }
+
+        function shuffleCards() {
+            // Fisher-Yates Shuffle Algorithmus
+            for (let i = currentStack.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [currentStack[i], currentStack[j]] = [currentStack[j], currentStack[i]];
+            }
+            currentIndex = 0;
+            if(isFlipped) flipCard();
+            setTimeout(() => renderCard(), isFlipped ? 300 : 0);
+        }
+
+        function resetToStart() {
+            currentIndex = 0;
+            // Wenn gemischt wurde, bleiben wir im gemischten Stapel, gehen nur an Pos 1.
+            // Falls gewünscht, dass auch die Sortierung zurückgesetzt wird, müsste man
+            // currentStack = [...vocabularyData] machen.
+            // Die Anforderung sagt: "zur ersten Karte des aktuellen Stapels".
+            
+            if(isFlipped) flipCard();
+            setTimeout(() => renderCard(), isFlipped ? 300 : 0);
+        }
+
+        function shakeCard() {
+            cardScene.style.animation = "shake 0.5s";
+            setTimeout(() => {
+                cardScene.style.animation = "none";
+            }, 500);
+        }
+
+        // --- Event Listeners ---
+
+        function setupEventListeners() {
+            // Maus/Touch Klick auf Karte
+            cardScene.addEventListener('click', flipCard);
+
+            // Tastatursteuerung
+            document.addEventListener('keydown', (e) => {
+                // Verhindert Scrollen bei Leertaste/Pfeiltasten
+                if(["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].indexOf(e.code) > -1) {
+                    // e.preventDefault(); // Optional, wenn Scrollen stört
+                }
+
+                switch (e.key) {
+                    case "ArrowRight":
+                        nextCard();
+                        break;
+                    case "ArrowLeft":
+                        prevCard();
+                        break;
+                    case " ":
+                    case "Enter":
+                        e.preventDefault(); // Verhindert Button-Klicks wenn Fokus drauf ist
+                        flipCard();
+                        break;
+                    case "Home":
+                        resetToStart();
+                        break;
+                }
+            });
+        }
+
+        // CSS für den Schütteleffekt hinzufügen (dynamisch)
+        const styleSheet = document.createElement("style");
+        styleSheet.innerText = `
+            @keyframes shake {
+                0% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                50% { transform: translateX(5px); }
+                75% { transform: translateX(-5px); }
+                100% { transform: translateX(0); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // Starten
+        init();
+
+    </script>
+</body>
+</html>
