@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch A1 - Das Kuckucksei (Einzeln)</title>
+    
+    <style>
+        :root {
+            --primary: #2e7d32; /* Dunkelgrün */
+            --primary-light: #4caf50;
+            --bg-color: #e8f5e9; /* Helles Grün */
+            --surface: #ffffff;
+            --text: #333;
+            --border-radius: 8px;
+            --success: #66bb6a;
+            --error: #ef5350;
+            --highlight: #ffeb3b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--surface);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        p.instruction {
+            color: #666;
+            text-align: center;
+        }
+
+        /* Aufgaben-Reihen */
+        .task-row {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+            border-left: 5px solid var(--primary);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .task-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .options-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .option-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 10px;
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            text-align: center;
+            transition: all 0.2s;
+            user-select: none;
+            position: relative;
+        }
+
+        .option-btn:hover {
+            border-color: var(--primary-light);
+            background-color: #f1f8e9;
+        }
+
+        /* Status-Klassen */
+        .option-btn.selected {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            font-weight: bold;
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.3);
+        }
+
+        .option-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: white !important;
+        }
+
+        .option-btn.correct::after {
+            content: " ✓";
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--error) !important;
+            border-color: var(--error) !important;
+            color: white !important;
+            opacity: 0.9;
+        }
+
+        .option-btn.wrong::after {
+            content: " ✗";
+            font-weight: bold;
+        }
+
+        .option-btn.missed {
+            border: 3px solid var(--success) !important;
+            color: var(--primary) !important;
+            background-color: #fff !important;
+            font-weight: bold;
+        }
+
+        .feedback-text {
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            min-height: 1.5em; /* Platzhalterhöhe */
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        /* Lokale Steuerungsleiste (pro Reihe) */
+        .row-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end; /* Buttons rechtsbündig */
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            flex-wrap: wrap;
+        }
+
+        button.ctrl-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: opacity 0.2s;
+        }
+
+        button.ctrl-btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-check { background-color: var(--primary); color: white; }
+        .btn-reset { background-color: #9e9e9e; color: white; }
+        .btn-solve { background-color: #ffa726; color: white; }
+
+        @media (max-width: 600px) {
+            .options-container {
+                flex-direction: column;
+            }
+            .option-btn {
+                width: 100%;
+            }
+            .row-controls {
+                justify-content: center; /* Auf Handy zentriert */
+            }
+            .row-controls button {
+                flex: 1; /* Volle Breite teilen */
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Das Kuckucksei 🥚</h1>
+        <p class="instruction">Welches Wort passt <strong>nicht</strong> in die Reihe? Klicke es an und prüfe deine Antwort.<br>(Achte auf das Geschlecht: er, sie oder es)</p>
+    </header>
+
+    <!-- Reihe 1 -->
+    <div class="task-row" id="row1" data-solution="3">
+        <div class="task-title">Reihe 1</div>
+        <div class="options-container">
+            <div class="option-btn" onclick="selectOption(1, 0)">Дом (Haus)</div>
+            <div class="option-btn" onclick="selectOption(1, 1)">Брат (Bruder)</div>
+            <div class="option-btn" onclick="selectOption(1, 2)">Стол (Tisch)</div>
+            <div class="option-btn" onclick="selectOption(1, 3)">Лампа (Lampe)</div>
+        </div>
+        <div class="feedback-text" id="feedback1"></div>
+        
+        <div class="row-controls">
+            <button class="ctrl-btn btn-check" onclick="checkRow(1)">Überprüfen</button>
+            <button class="ctrl-btn btn-reset" onclick="resetRow(1)">Zurücksetzen</button>
+            <button class="ctrl-btn btn-solve" onclick="solveRow(1)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Reihe 2 -->
+    <div class="task-row" id="row2" data-solution="1">
+        <div class="task-title">Reihe 2</div>
+        <div class="options-container">
+            <div class="option-btn" onclick="selectOption(2, 0)">Окно (Fenster)</div>
+            <div class="option-btn" onclick="selectOption(2, 1)">Чай (Tee)</div>
+            <div class="option-btn" onclick="selectOption(2, 2)">Море (Meer)</div>
+            <div class="option-btn" onclick="selectOption(2, 3)">Письмо (Brief)</div>
+        </div>
+        <div class="feedback-text" id="feedback2"></div>
+
+        <div class="row-controls">
+            <button class="ctrl-btn btn-check" onclick="checkRow(2)">Überprüfen</button>
+            <button class="ctrl-btn btn-reset" onclick="resetRow(2)">Zurücksetzen</button>
+            <button class="ctrl-btn btn-solve" onclick="solveRow(2)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Reihe 3 -->
+    <div class="task-row" id="row3" data-solution="2">
+        <div class="task-title">Reihe 3: Wörter auf -ь</div>
+        <div class="options-container">
+            <div class="option-btn" onclick="selectOption(3, 0)">День (Tag)</div>
+            <div class="option-btn" onclick="selectOption(3, 1)">Словарь (Wörterbuch)</div>
+            <div class="option-btn" onclick="selectOption(3, 2)">Ночь (Nacht)</div>
+            <div class="option-btn" onclick="selectOption(3, 3)">Гость (Gast)</div>
+        </div>
+        <div class="feedback-text" id="feedback3"></div>
+
+        <div class="row-controls">
+            <button class="ctrl-btn btn-check" onclick="checkRow(3)">Überprüfen</button>
+            <button class="ctrl-btn btn-reset" onclick="resetRow(3)">Zurücksetzen</button>
+            <button class="ctrl-btn btn-solve" onclick="solveRow(3)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Reihe 4 -->
+    <div class="task-row" id="row4" data-solution="3">
+        <div class="task-title">Reihe 4: Natürliches Geschlecht</div>
+        <div class="options-container">
+            <div class="option-btn" onclick="selectOption(4, 0)">Папа (Papa)</div>
+            <div class="option-btn" onclick="selectOption(4, 1)">Дядя (Onkel)</div>
+            <div class="option-btn" onclick="selectOption(4, 2)">Дедушка (Opa)</div>
+            <div class="option-btn" onclick="selectOption(4, 3)">Мама (Mama)</div>
+        </div>
+        <div class="feedback-text" id="feedback4"></div>
+
+        <div class="row-controls">
+            <button class="ctrl-btn btn-check" onclick="checkRow(4)">Überprüfen</button>
+            <button class="ctrl-btn btn-reset" onclick="resetRow(4)">Zurücksetzen</button>
+            <button class="ctrl-btn btn-solve" onclick="solveRow(4)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Reihe 5 -->
+    <div class="task-row" id="row5" data-solution="2">
+        <div class="task-title">Reihe 5: Endungen -й/-ий vs -ия</div>
+        <div class="options-container">
+            <div class="option-btn" onclick="selectOption(5, 0)">Музей (Museum)</div>
+            <div class="option-btn" onclick="selectOption(5, 1)">Трамвай (Straßenbahn)</div>
+            <div class="option-btn" onclick="selectOption(5, 2)">Аудитория (Hörsaal)</div>
+            <div class="option-btn" onclick="selectOption(5, 3)">Санаторий (Sanatorium)</div>
+        </div>
+        <div class="feedback-text" id="feedback5"></div>
+
+        <div class="row-controls">
+            <button class="ctrl-btn btn-check" onclick="checkRow(5)">Überprüfen</button>
+            <button class="ctrl-btn btn-reset" onclick="resetRow(5)">Zurücksetzen</button>
+            <button class="ctrl-btn btn-solve" onclick="solveRow(5)">Lösung anzeigen</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Globale Variable zum Speichern der Benutzerauswahl
+    var userSelections = {};
+
+    // Erklärungen für die Lösung
+    var explanations = {
+        1: "„Лампа“ ist weiblich (ОНА), die anderen sind männlich (ОН).",
+        2: "„Чай“ ist männlich (ОН), die anderen sind sächlich (ОНО - Endung -о/-е).",
+        3: "„Ночь“ ist weiblich (ОНА), die anderen sind männlich (ОН).",
+        4: "„Мама“ ist weiblich (ОНА). Die anderen enden zwar auf -а/-я, sind aber männliche Personen (ОН).",
+        5: "„Аудитория“ ist weiblich (ОНА - Endung -ия), die anderen sind männlich (ОН - Endung -й/-ий)."
+    };
+
+    // 1. Auswahl-Funktion
+    function selectOption(rowNum, index) {
+        var row = document.getElementById('row' + rowNum);
+        var buttons = row.querySelectorAll('.option-btn');
+        
+        // Alte visuelle Klassen entfernen
+        for (var i = 0; i < buttons.length; i++) {
+            buttons[i].classList.remove('selected', 'correct', 'wrong', 'missed');
+        }
+        
+        // Neue Auswahl markieren
+        buttons[index].classList.add('selected');
+        
+        // Auswahl speichern
+        userSelections[rowNum] = index;
+
+        // Feedback zurücksetzen, wenn man neu wählt
+        var fb = document.getElementById('feedback' + rowNum);
+        fb.textContent = '';
+        fb.style.backgroundColor = 'transparent';
+    }
+
+    // 2. Überprüfen-Funktion (pro Reihe)
+    function checkRow(rowNum) {
+        var row = document.getElementById('row' + rowNum);
+        var correctIndex = parseInt(row.getAttribute('data-solution'));
+        var selectedIndex = userSelections[rowNum];
+        var feedbackBox = document.getElementById('feedback' + rowNum);
+        var buttons = row.querySelectorAll('.option-btn');
+
+        // Visuelle Zustände (außer selected) zurücksetzen vor Prüfung
+        for (var j = 0; j < buttons.length; j++) {
+            buttons[j].classList.remove('correct', 'wrong', 'missed');
+        }
+
+        if (selectedIndex === undefined) {
+            feedbackBox.textContent = "⚠️ Bitte wähle ein Wort aus.";
+            feedbackBox.style.color = "#d84315";
+            feedbackBox.style.backgroundColor = "#fbe9e7";
+            return;
+        }
+
+        if (selectedIndex === correctIndex) {
+            buttons[selectedIndex].classList.add('correct');
+            feedbackBox.textContent = "Richtig! " + explanations[rowNum];
+            feedbackBox.style.color = "#1b5e20";
+            feedbackBox.style.backgroundColor = "#e8f5e9";
+        } else {
+            buttons[selectedIndex].classList.add('wrong');
+            feedbackBox.textContent = "Leider falsch. Versuche es noch einmal.";
+            feedbackBox.style.color = "#b71c1c";
+            feedbackBox.style.backgroundColor = "#ffebee";
+        }
+    }
+
+    // 3. Zurücksetzen-Funktion (pro Reihe)
+    function resetRow(rowNum) {
+        // Auswahl im Speicher löschen
+        delete userSelections[rowNum];
+
+        var row = document.getElementById('row' + rowNum);
+        var buttons = row.querySelectorAll('.option-btn');
+        var feedbackBox = document.getElementById('feedback' + rowNum);
+        
+        // Buttons neutralisieren
+        for (var j = 0; j < buttons.length; j++) {
+            buttons[j].classList.remove('selected', 'correct', 'wrong', 'missed');
+        }
+
+        // Feedback löschen
+        feedbackBox.textContent = '';
+        feedbackBox.style.backgroundColor = 'transparent';
+    }
+
+    // 4. Lösung anzeigen-Funktion (pro Reihe)
+    function solveRow(rowNum) {
+        // Erst zurücksetzen, damit es sauber aussieht
+        resetRow(rowNum);
+
+        var row = document.getElementById('row' + rowNum);
+        var correctIndex = parseInt(row.getAttribute('data-solution'));
+        var buttons = row.querySelectorAll('.option-btn');
+        var feedbackBox = document.getElementById('feedback' + rowNum);
+
+        // Die richtige Lösung optisch hervorheben
+        buttons[correctIndex].classList.add('missed');
+        
+        feedbackBox.textContent = "Lösung: " + explanations[rowNum];
+        feedbackBox.style.color = "#333";
+        feedbackBox.style.backgroundColor = "#f0f0f0";
+    }
+</script>
+
+</body>
+</html>
