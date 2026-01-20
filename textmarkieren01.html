@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch A1 - Text Markierung (Erweitert)</title>
+    
+    <style>
+        :root {
+            /* Design-Farben (Grünthema) */
+            --primary: #2e7d32;
+            --bg-color: #e8f5e9;
+            --surface: #ffffff;
+            --text: #333;
+            --border-radius: 8px;
+
+            /* Die Markierungs-Farben */
+            --color-masc: #1976d2; /* Kräftiges Blau */
+            --color-fem: #d32f2f;  /* Kräftiges Rot */
+            --color-neut: #388e3c; /* Kräftiges Grün */
+            
+            /* Helle Varianten für den Hintergrund der Wörter */
+            --bg-masc: #e3f2fd;
+            --bg-fem: #ffebee;
+            --bg-neut: #e8f5e9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: var(--surface);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+
+        p.instruction {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Toolbar für die Stifte */
+        .toolbar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: var(--border-radius);
+            flex-wrap: wrap;
+            position: sticky; /* Bleibt beim Scrollen oben haften */
+            top: 10px;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .pen-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border: 2px solid transparent;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.1s, border-color 0.2s;
+            user-select: none;
+        }
+
+        .pen-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Aktiver Stift Status */
+        .pen-btn.active {
+            border-color: #333;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            background-color: #fff;
+        }
+
+        .pen-blue { color: var(--color-masc); }
+        .pen-red { color: var(--color-fem); }
+        .pen-green { color: var(--color-neut); }
+        
+        .pen-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .pen-blue .pen-dot { background-color: var(--color-masc); }
+        .pen-red .pen-dot { background-color: var(--color-fem); }
+        .pen-green .pen-dot { background-color: var(--color-neut); }
+
+        /* Der Textbereich */
+        .text-area {
+            font-size: 1.3rem;
+            line-height: 2.4; /* Hoher Zeilenabstand für Lesbarkeit */
+            padding: 25px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            background-color: #fff;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        /* Die markierbaren Wörter */
+        .word {
+            padding: 2px 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            border-bottom: 2px solid #ccc; /* Unterstreichung signalisiert Klickbarkeit */
+            transition: background-color 0.2s, color 0.2s;
+            margin: 0 1px;
+            white-space: nowrap; /* Wort nicht umbrechen */
+        }
+
+        .word:hover {
+            background-color: #f0f0f0;
+            border-bottom-color: #999;
+        }
+
+        /* Angewendete Farben (durch User oder Lösung) */
+        .word.marked-masc {
+            background-color: var(--bg-masc);
+            color: var(--color-masc);
+            border-bottom-color: var(--color-masc);
+        }
+        .word.marked-fem {
+            background-color: var(--bg-fem);
+            color: var(--color-fem);
+            border-bottom-color: var(--color-fem);
+        }
+        .word.marked-neut {
+            background-color: var(--bg-neut);
+            color: var(--color-neut);
+            border-bottom-color: var(--color-neut);
+        }
+
+        /* Feedback-Anzeige für Fehler */
+        .word.error {
+            border: 2px solid red; /* Roter Rahmen bei Fehler */
+            box-shadow: 0 0 5px rgba(255, 0, 0, 0.3);
+        }
+
+        .feedback-box {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            min-height: 1.5em;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        /* Steuerungsleiste */
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button.ctrl-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        button.ctrl-btn:hover { opacity: 0.9; filter: brightness(1.05); }
+
+        .btn-check { background-color: var(--primary); color: white; }
+        .btn-reset { background-color: #757575; color: white; }
+        .btn-solve { background-color: #ffa726; color: white; }
+
+        /* Vokabelliste */
+        .vocab-list {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #ccc;
+            font-size: 0.9rem;
+            color: #555;
+            columns: 2; /* Zweispaltig auf Desktop */
+        }
+
+        .vocab-list h3 {
+            column-span: all;
+            margin-top: 0;
+            font-size: 1rem;
+            color: var(--primary);
+        }
+
+        @media (max-width: 600px) {
+            .text-area { font-size: 1.1rem; padding: 15px; }
+            .vocab-list { columns: 1; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Text-Markierung 🖍️</h1>
+        <p class="instruction">
+            Lies den Text über das Zimmer. Welches Geschlecht haben die unterstrichenen Wörter?<br>
+            Wähle oben einen Stift und markiere die Wörter.
+        </p>
+    </header>
+
+    <!-- Werkzeugleiste -->
+    <div class="toolbar">
+        <div class="pen-btn pen-blue active" onclick="selectTool('masc', this)">
+            <div class="pen-dot"></div> Maskulin (ОН)
+        </div>
+        <div class="pen-btn pen-red" onclick="selectTool('fem', this)">
+            <div class="pen-dot"></div> Feminin (ОНА)
+        </div>
+        <div class="pen-btn pen-green" onclick="selectTool('neut', this)">
+            <div class="pen-dot"></div> Sächlich (ОНО)
+        </div>
+    </div>
+
+    <!-- Der Text -->
+    <div class="text-area">
+        Привет! Это моя <span class="word" onclick="markWord(this)" data-correct="fem">комната</span>. 
+        Здесь стоит большой <span class="word" onclick="markWord(this)" data-correct="masc">стол</span>. 
+        Справа стоит удобный <span class="word" onclick="markWord(this)" data-correct="masc">стул</span>. 
+        На столе красивая <span class="word" onclick="markWord(this)" data-correct="fem">лампа</span>. 
+        Где мой <span class="word" onclick="markWord(this)" data-correct="masc">словарь</span>? 
+        Он лежит там, где <span class="word" onclick="markWord(this)" data-correct="fem">кровать</span>. 
+        Посмотри на <span class="word" onclick="markWord(this)" data-correct="neut">окно</span>! 
+        Сегодня светит <span class="word" onclick="markWord(this)" data-correct="neut">солнце</span>. 
+        Мой <span class="word" onclick="markWord(this)" data-correct="masc">папа</span> 
+        сейчас пьёт <span class="word" onclick="markWord(this)" data-correct="masc">кофе</span> 
+        и читает журнал.
+    </div>
+
+    <div class="feedback-box" id="feedback"></div>
+
+    <div class="controls">
+        <button class="ctrl-btn btn-check" onclick="checkAnswers()">Überprüfen</button>
+        <button class="ctrl-btn btn-reset" onclick="resetText()">Zurücksetzen</button>
+        <button class="ctrl-btn btn-solve" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+
+    <!-- Vokabelhilfe -->
+    <div class="vocab-list">
+        <h3>Vokabelhilfe & Hinweise:</h3>
+        <ul>
+            <li>комната - das Zimmer</li>
+            <li>стол / стул - der Tisch / der Stuhl</li>
+            <li>словарь - das Wörterbuch (Maskulin auf -ь!)</li>
+            <li>кровать - das Bett (Feminin auf -ь!)</li>
+            <li>окно / солнце - das Fenster / die Sonne</li>
+            <li>папа - der Papa (endet auf -a, ist aber Maskulin!)</li>
+            <li>кофе - der Kaffee (endet auf -e, ist aber Maskulin!)</li>
+        </ul>
+    </div>
+
+</div>
+
+<script>
+    // Aktuelles Werkzeug (Standard: maskulin/blau)
+    let currentTool = 'masc';
+
+    // Werkzeug auswählen
+    function selectTool(toolType, btnElement) {
+        currentTool = toolType;
+        
+        // Buttons aktualisieren
+        document.querySelectorAll('.pen-btn').forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+    }
+
+    // Wort markieren
+    function markWord(wordElement) {
+        // Wenn Lösung angezeigt wird, Bearbeitung sperren
+        const feedbackBox = document.getElementById('feedback');
+        if (feedbackBox.innerText.includes("Lösung")) {
+             resetText(); // Resetten, damit man neu starten kann
+        }
+
+        // Zuerst alle Farbklassen entfernen
+        wordElement.classList.remove('marked-masc', 'marked-fem', 'marked-neut', 'error');
+        
+        // Neue Klasse hinzufügen
+        wordElement.classList.add('marked-' + currentTool);
+        
+        // Attribut setzen für spätere Prüfung
+        wordElement.dataset.userChoice = currentTool;
+    }
+
+    // Überprüfen
+    function checkAnswers() {
+        const words = document.querySelectorAll('.word');
+        let correctCount = 0;
+        let totalCount = words.length;
+        let errors = 0;
+        let missing = 0;
+
+        words.forEach(word => {
+            word.classList.remove('error'); // Alten Fehlerstatus entfernen
+            
+            const userChoice = word.dataset.userChoice;
+            const correctChoice = word.dataset.correct;
+
+            if (!userChoice) {
+                missing++;
+            } else if (userChoice === correctChoice) {
+                correctCount++;
+            } else {
+                errors++;
+                word.classList.add('error'); // Rot umranden
+            }
+        });
+
+        const feedback = document.getElementById('feedback');
+        feedback.style.backgroundColor = "transparent";
+        
+        if (missing === totalCount) {
+            feedback.textContent = "Bitte markiere zuerst die Wörter im Text!";
+            feedback.style.color = "#ef6c00";
+            feedback.style.backgroundColor = "#fff3e0";
+        } else if (errors === 0 && missing === 0) {
+            feedback.textContent = "Hervorragend! Du hast alle Wörter richtig bestimmt! 🎉";
+            feedback.style.color = "#2e7d32";
+            feedback.style.backgroundColor = "#e8f5e9";
+        } else {
+            feedback.innerHTML = `Du hast <strong>${correctCount}</strong> von <strong>${totalCount}</strong> Wörtern richtig.<br>Fehler sind rot umrandet.`;
+            feedback.style.color = "#c62828";
+            feedback.style.backgroundColor = "#ffebee";
+        }
+    }
+
+    // Zurücksetzen
+    function resetText() {
+        const words = document.querySelectorAll('.word');
+        words.forEach(word => {
+            word.classList.remove('marked-masc', 'marked-fem', 'marked-neut', 'error');
+            delete word.dataset.userChoice;
+        });
+        const feedback = document.getElementById('feedback');
+        feedback.textContent = '';
+        feedback.style.backgroundColor = 'transparent';
+    }
+
+    // Lösung anzeigen
+    function showSolution() {
+        // Erst alles säubern
+        const words = document.querySelectorAll('.word');
+        words.forEach(word => {
+            word.classList.remove('marked-masc', 'marked-fem', 'marked-neut', 'error');
+            delete word.dataset.userChoice; // User Choice entfernen
+        });
+
+        // Dann richtige Farben setzen
+        words.forEach(word => {
+            const correct = word.dataset.correct;
+            word.classList.add('marked-' + correct);
+        });
+        
+        const feedback = document.getElementById('feedback');
+        feedback.textContent = "Lösung angezeigt: Blau = Maskulin, Rot = Feminin, Grün = Sächlich.";
+        feedback.style.color = "#333";
+        feedback.style.backgroundColor = "#f0f0f0";
+    }
+</script>
+
+</body>
+</html>
