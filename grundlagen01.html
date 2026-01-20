@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch A1 - Genus der Substantive</title>
+    <!-- Polyfill für Drag & Drop auf Touch-Geräten -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    
+    <style>
+        :root {
+            --primary: #3f51b5; /* Indigo */
+            --secondary: #e8eaf6;
+            --accent: #ff9800; /* Orange */
+            --success: #4caf50;
+            --error: #f44336;
+            --text: #333;
+            --bg: #f9f9f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--primary);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        /* Theorie-Bereich */
+        .theory {
+            background-color: var(--secondary);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 5px solid var(--primary);
+            margin-bottom: 40px;
+        }
+
+        .theory-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+        }
+
+        .theory-table th, .theory-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .theory-table th {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Übungs-Container */
+        .exercise-box {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .exercise-number {
+            background-color: var(--primary);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        /* Interaktive Elemente */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-check { background-color: var(--primary); color: white; }
+        .btn-reset { background-color: #757575; color: white; }
+        .btn-solve { background-color: var(--accent); color: white; }
+        
+        button:hover { opacity: 0.9; }
+
+        /* Feedback Styles */
+        .feedback { margin-left: 10px; font-weight: bold; }
+        .correct-bg { background-color: #e8f5e9 !important; border-color: var(--success) !important; }
+        .incorrect-bg { background-color: #ffebee !important; border-color: var(--error) !important; }
+        .correct-text { color: var(--success); }
+        .incorrect-text { color: var(--error); }
+
+        /* Spezifische Layouts */
+        .grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .row-layout { display: flex; flex-direction: column; gap: 10px; }
+        
+        input[type="text"], select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Drag & Drop Styles */
+        .drag-area {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        
+        .drop-zone {
+            flex: 1;
+            min-width: 120px;
+            background: #f0f0f0;
+            border: 2px dashed #999;
+            border-radius: 8px;
+            padding: 10px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .source-zone {
+            width: 100%;
+            min-height: 60px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: #fff;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+
+        .draggable {
+            background: white;
+            border: 1px solid var(--primary);
+            padding: 5px 15px;
+            border-radius: 15px;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+        }
+
+        .draggable.correct-bg { border-color: var(--success); }
+        .draggable.incorrect-bg { border-color: var(--error); }
+
+        /* Click Select Exercise */
+        .clickable-word {
+            display: inline-block;
+            padding: 8px 15px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #fff;
+        }
+        .clickable-word.selected {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik: Genus der Substantive (A1)</h1>
+
+    <!-- Einführung -->
+    <div class="theory">
+        <h2>Einführung: Wie bestimme ich das Geschlecht?</h2>
+        <p>Im Russischen gibt es drei Geschlechter. Meistens verrät die letzte Endung des Wortes das Geschlecht.</p>
+        
+        <table class="theory-table">
+            <thead>
+                <tr>
+                    <th>Maskulin (ОН)</th>
+                    <th>Feminin (ОНА)</th>
+                    <th>Neutrum (ОНО)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        Konsonant (z.B. до<strong>м</strong>)<br>
+                        -й (z.B. музе<strong>й</strong>)<br>
+                        -ь (z.B. ден<strong>ь</strong>)*
+                    </td>
+                    <td>
+                        -а (z.B. мамы<strong>а</strong>)<br>
+                        -я (z.B. семь<strong>я</strong>)<br>
+                        -ь (z.B. ноч<strong>ь</strong>)*
+                    </td>
+                    <td>
+                        -о (z.B. окн<strong>о</strong>)<br>
+                        -е (z.B. мор<strong>е</strong>)<br>
+                        -мя (z.B. и<strong>мя</strong>)**
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <p><small>* Wörter auf <strong>-ь</strong> (Weichheitszeichen) können männlich oder weiblich sein (Lernsache!).<br>
+        ** Wörter auf <strong>-мя</strong> sind eine Ausnahme und sächlich (Neutrum).<br>
+        *** <strong>Ausnahme Person:</strong> Папа (Papa), Дядя (Onkel) enden auf -a/-я, sind aber <strong>maskulin</strong> (natürliches Geschlecht).</small></p>
+    </div>
+
+    <!-- Übung 1: Grundlagen Multiple Choice -->
+    <div class="exercise-box" id="ex1">
+        <div class="exercise-header">
+            <h3>Übung 1: Endungen erkennen</h3>
+            <span class="exercise-number">1/10</span>
+        </div>
+        <p>Wählen Sie das richtige Pronomen anhand der Endung.</p>
+        <div class="row-layout">
+            <div class="item" data-correct="on">
+                <strong>1. Студент</strong> (Student) &rarr; 
+                <label><input type="radio" name="ex1_1" value="on"> ОН</label>
+                <label><input type="radio" name="ex1_1" value="ona"> ОНА</label>
+                <label><input type="radio" name="ex1_1" value="ono"> ОНО</label>
+                <span class="feedback"></span>
+            </div>
+            <div class="item" data-correct="ona">
+                <strong>2. Газета</strong> (Zeitung) &rarr; 
+                <label><input type="radio" name="ex1_2" value="on"> ОН</label>
+                <label><input type="radio" name="ex1_2" value="ona"> ОНА</label>
+                <label><input type="radio" name="ex1_2" value="ono"> ОНО</label>
+                <span class="feedback"></span>
+            </div>
+            <div class="item" data-correct="ono">
+                <strong>3. Письмо</strong> (Brief) &rarr; 
+                <label><input type="radio" name="ex1_3" value="on"> ОН</label>
+                <label><input type="radio" name="ex1_3" value="ona"> ОНА</label>
+                <label><input type="radio" name="ex1_3" value="ono"> ОНО</label>
+                <span class="feedback"></span>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkRadio('ex1')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadio('ex1')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveRadio('ex1')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Übung 2: Drag & Drop Basics -->
+    <div class="exercise-box" id="ex2">
+        <div class="exercise-header">
+            <h3>Übung 2: Sortieren</h3>
+            <span class="exercise-number">2/10</span>
+        </div>
+        <p>Ziehen Sie die Wörter in die richtige Box.</p>
+        
+        <div class="source-zone" id="ex2-source" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <span id="w2-1" class="draggable" draggable="true" ondragstart="drag(event)" data-target="zone-on">Брат</span>
+            <span id="w2-2" class="draggable" draggable="true" ondragstart="drag(event)" data-target="zone-ona">Лампа</span>
+            <span id="w2-3" class="draggable" draggable="true" ondragstart="drag(event)" data-target="zone-ono">Окно</span>
+            <span id="w2-4" class="draggable" draggable="true" ondragstart="drag(event)" data-target="zone-on">Парк</span>
+            <span id="w2-5" class="draggable" draggable="true" ondragstart="drag(event)" data-target="zone-ona">Музыка</span>
+            <span id="w2-6" class="draggable" draggable="true" ondragstart="drag(event)" data-target="zone-ono">Молоко</span>
+        </div>
+
+        <div class="drag-area">
+            <div id="zone-on" class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"><strong>ОН</strong></div>
+            <div id="zone-ona" class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"><strong>ОНА</strong></div>
+            <div id="zone-ono" class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"><strong>ОНО</strong></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-check" onclick="checkDrag('ex2')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetDrag('ex2', 'ex2-source')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveDrag('ex2')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Übung 3: Input Text -->
+    <div class="exercise-box" id="ex3">
+        <div class="exercise-header">
+            <h3>Übung 3: Schreiben</h3>
+            <span class="exercise-number">3/10</span>
+        </div>
+        <p>Schreiben Sie <strong>он</strong>, <strong>она</strong> oder <strong>оно</strong> in das Feld.</p>
+        <div class="grid-layout">
+            <div class="item">
+                <label>Дом (Haus):</label><br>
+                <input type="text" data-correct="он"> <span class="feedback"></span>
+            </div>
+            <div class="item">
+                <label>Школа (Schule):</label><br>
+                <input type="text" data-correct="она"> <span class="feedback"></span>
+            </div>
+            <div class="item">
+                <label>Радио (Radio):</label><br>
+                <input type="text" data-correct="оно"> <span class="feedback"></span>
+            </div>
+            <div class="item">
+                <label>Чай (Tee):</label><br>
+                <input type="text" data-correct="он"> <span class="feedback"></span>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkInput('ex3')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetInput('ex3')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveInput('ex3')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Übung 4: Dropdown (Weichheitszeichen) -->
+    <div class="exercise-box" id="ex4">
+        <div class="exercise-header">
+            <h3>Übung 4: Das Weichheitszeichen (ь)</h3>
+            <span class="exercise-number">4/10</span>
+        </div>
+        <p>Wörter auf -ь muss man lernen. Bestimmen Sie das Geschlecht.</p>
+        <div class="row-layout">
+            <div class="item">
+                1. Ден<strong>ь</strong> (Tag) &rarr;
+                <select data-correct="он"><option value="">?</option><option value="он">ОН</option><option value="она">ОНА</option></select>
+                <span class="feedback"></span>
+            </div>
+            <div class="item">
+                2. Ноч<strong>ь</strong> (Nacht) &rarr;
+                <select data-correct="она"><option value="">?</option><option value="он">ОН</option><option value="она">ОНА</option></select>
+                <span class="feedback"></span>
+            </div>
+            <div class="item">
+                3. Словар<strong>ь</strong> (Wörterbuch) &rarr;
+                <select data-correct="он"><option value="">?</option><option value="он">ОН</option><option value="она">ОНА</option></select>
+                <span class="feedback"></span>
+            </div>
+            <div class="item">
+                4. Тетрад<strong>ь</strong> (Heft) &rarr;
+                <select data-correct="она"><option value="">?</option><option value="он">ОН</option><option value="она">ОНА</option></select>
+                <span class="feedback"></span>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkSelect('ex4')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetSelect('ex4')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveSelect('ex4')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Übung 5: Natürliches Geschlecht -->
+    <div class="exercise-box" id="ex5">
+        <div class="exercise-header">
+            <h3>Übung 5: Personen (Ausnahmen)</h3>
+            <span class="exercise-number">5/10</span>
+        </div>
+        <p>Achtung: Männliche Personen sind grammatikalisch maskulin, auch wenn sie auf -a enden.</p>
+        <div class="row-layout">
+            <div class="item" data-correct="on">
+                <strong>1. Папа</strong> (Papa) &rarr; 
+                <label><input type="radio" name="ex5_1" value="on"> ОН</label>
+                <label><input type="radio" name="ex5_1" value="ona"> ОНА</label>
+                <span class="feedback"></span>
+            </div>
+            <div class="item" data-correct="on">
+                <strong>2. Дедушка</strong> (Opa) &rarr; 
+                <label><input type="radio" name="ex5_2" value="on"> ОН</label>
+                <label><input type="radio" name="ex5_2" value="ona"> ОНА</label>
+                <span class="feedback"></span>
+            </div>
+            <div class="item" data-correct="ona">
+                <strong>3. Мама</strong> (Mama) &rarr; 
+                <label><input type="radio" name="ex5_3" value="on"> ОН</label>
+                <label><input type="radio" name="ex5_3" value="ona"> ОНА</label>
+                <span class="feedback"></span>
+            </div>
+            <div class="item" data-correct="on">
+                <strong>4. Мужчина</strong> (Mann) &rarr; 
+                <label><input type="radio" name="ex5_4" value="on"> ОН</label>
+                <label><input type="radio" name="ex5_4" value="ona"> ОНА</label>
+                <span class="feedback"></span>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkRadio('ex5')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetRadio('ex5')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveRadio('ex5')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Übung 6: Kurznamen Kontext -->
+    <div class="exercise-box" id="ex6">
+        <div class="exercise-header">
+            <h3>Übung 6: Kurznamen im Kontext</h3>
+            <span class="exercise-number">6/10</span>
+        </div>
+        <p>Der Name <strong>Саша</strong> kann männlich oder weiblich sein. Entscheiden Sie nach dem Kontext.</p>
+        <div class="row-layout">
+            <div class="item" data-correct="on">
+                1. Das ist mein Bruder Саша. &rarr;
+                <select data-correct="он"><option value="">?</option><option value="он">ОН</option><option value="она">ОНА</option></select>
+                <span class="feedback"></span>
+            </div>
+            <div class="item" data-correct="ona">
+                2. Das ist meine Schwester Саша. &rarr;
+                <select data-correct="она"><option value="">?</option><option value="он">ОН</option><option value="она">ОНА</option></select>
+                <span class="feedback"></span>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkSelect('ex6')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetSelect('ex6')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveSelect('ex6')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Übung 7: Auswahl-Klick -->
+    <div class="exercise-box" id="ex7">
+        <div class="exercise-header">
+            <h3>Übung 7: Maskulin finden</h3>
+            <span class="exercise-number">7/10</span>
+        </div>
+        <p>Klicken Sie alle Wörter an, die <strong>maskulin (ОН)</strong> sind.</p>
+        <div id="click-area-7">
+            <span class="clickable-word" onclick="toggleSelect(this)" data-gender="on">Стол</span>
+            <span class="clickable-word" onclick="toggleSelect(this)" data-gender="ona">Лампа</span>
+            <span class="clickable-word" onclick="toggleSelect(this)" data-gender="on">Музей</span>
+            <span class="clickable-word" onclick="toggleSelect(this)" data-gender="ono">Море</span>
+            <span class="clickable-word" onclick="toggleSelect(this)" data-gender="on">Словарь</span>
+            <span class="clickable-word" onclick="toggleSelect(this)" data-gender="ona">Ночь</span>
+            <span class="clickable-word" onclick="toggleSelect(this)" data-gender="on">Трамвай</span>
+        </div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkClick('ex7', 'on')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetClick('ex7')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveClick('ex7', 'on')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Übung 8: Wörter auf -й und -ий -->
+    <div class="exercise-box" id="ex8">
+        <div class="exercise-header">
+            <h3>Übung 8: Wörter auf -й, -ий</h3>
+            <span class="exercise-number">8/10</span>
+        </div>
+        <p>Diese Wörter sind fast immer maskulin. Sortieren Sie.</p>
+        <div class="source-zone" id="ex8-source" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <span id="w8-1" class="draggable" draggable="true" ondragstart="drag(event)" data-target="z8-on">Трамвай</span>
+            <span id="w8-2" class="draggable" draggable="true" ondragstart="drag(event)" data-target="z8-on">Музей</span>
+            <span id="w8-3" class="draggable" draggable="true" ondragstart="drag(event)" data-target="z8-on">Санаторий</span>
+            <span id="w8-4" class="draggable" draggable="true" ondragstart="drag(event)" data-target="z8-ona">Аудитория</span> <!-- Falle: endet auf -ya -->
+        </div>
+
+        <div class="drag-area">
+            <div id="z8-on" class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"><strong>ОН (-й / -ий)</strong></div>
+            <div id="z8-ona" class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)"><strong>ОНА (-ия)</strong></div>
+        </div>
+
+        <div class="controls">
+            <button class="btn-check" onclick="checkDrag('ex8')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetDrag('ex8', 'ex8-source')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveDrag('ex8')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Übung 9: Sächliches Geschlecht (Neutrum) -->
+    <div class="exercise-box" id="ex9">
+        <div class="exercise-header">
+            <h3>Übung 9: Neutrum erkennen</h3>
+            <span class="exercise-number">9/10</span>
+        </div>
+        <p>Ergänzen Sie die typischen Endungen für Neutrum (-о, -е). Achtung bei "Name".</p>
+        <div class="row-layout">
+            <div class="item">
+                1. Окн... (Fenster) &rarr;
+                <select data-correct="о"><option value="">?</option><option value="о">-о</option><option value="е">-е</option></select>
+                <span class="feedback"></span>
+            </div>
+            <div class="item">
+                2. Мор... (Meer) &rarr;
+                <select data-correct="е"><option value="">?</option><option value="о">-о</option><option value="е">-е</option></select>
+                <span class="feedback"></span>
+            </div>
+            <div class="item">
+                3. И... (Name - Ausnahme!) &rarr;
+                <select data-correct="мя"><option value="">?</option><option value="о">-о</option><option value="мя">-мя</option></select> (имя - оно)
+                <span class="feedback"></span>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkSelect('ex9')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetSelect('ex9')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveSelect('ex9')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Übung 10: Die Klassiker (Schwere Wörter) -->
+    <div class="exercise-box" id="ex10">
+        <div class="exercise-header">
+            <h3>Übung 10: Schwierige Fälle & Internationalismen</h3>
+            <span class="exercise-number">10/10</span>
+        </div>
+        <p>Bestimmen Sie das Geschlecht dieser Wörter.</p>
+        <div class="grid-layout">
+            <div class="item">
+                <label>Кофе (Kaffee - Ausn.!):</label><br>
+                <input type="text" data-correct="он"> <span class="feedback"></span>
+            </div>
+            <div class="item">
+                <label>Метро (U-Bahn):</label><br>
+                <input type="text" data-correct="оно"> <span class="feedback"></span>
+            </div>
+            <div class="item">
+                <label>Фото (Foto):</label><br>
+                <input type="text" data-correct="оно"> <span class="feedback"></span>
+            </div>
+             <div class="item">
+                <label>Россия (Russland):</label><br>
+                <input type="text" data-correct="она"> <span class="feedback"></span>
+            </div>
+        </div>
+        <div class="controls">
+            <button class="btn-check" onclick="checkInput('ex10')">Überprüfen</button>
+            <button class="btn-reset" onclick="resetInput('ex10')">Zurücksetzen</button>
+            <button class="btn-solve" onclick="solveInput('ex10')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    /* --- Drag & Drop Funktionen --- */
+    function allowDrop(ev) { ev.preventDefault(); }
+    function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+    function drop(ev) {
+        ev.preventDefault();
+        var data = ev.dataTransfer.getData("text");
+        var draggedEl = document.getElementById(data);
+        var target = ev.target.closest('.drop-zone') || ev.target.closest('.source-zone');
+        if (target) { target.appendChild(draggedEl); }
+    }
+
+    /* --- Hilfsfunktionen für Styles --- */
+    function setFeedback(element, isCorrect) {
+        element.classList.remove('correct-bg', 'incorrect-bg');
+        if(isCorrect) element.classList.add('correct-bg');
+        else element.classList.add('incorrect-bg');
+    }
+
+    function setSpanMsg(span, isCorrect) {
+        span.innerHTML = isCorrect ? '✓ Richtig' : '✗ Falsch';
+        span.className = 'feedback ' + (isCorrect ? 'correct-text' : 'incorrect-text');
+    }
+
+    /* --- Radio Logic (Ex 1, 5) --- */
+    function checkRadio(containerId) {
+        const container = document.getElementById(containerId);
+        const items = container.querySelectorAll('.item');
+        items.forEach(item => {
+            const correctVal = item.dataset.correct;
+            const checked = item.querySelector('input:checked');
+            const span = item.querySelector('.feedback');
+            
+            if (!checked) {
+                span.innerHTML = 'Bitte wählen!';
+                span.className = 'feedback incorrect-text';
+                return;
+            }
+            const isCorrect = checked.value === correctVal;
+            setSpanMsg(span, isCorrect);
+        });
+    }
+
+    function resetRadio(containerId) {
+        const container = document.getElementById(containerId);
+        container.querySelectorAll('input').forEach(i => i.checked = false);
+        container.querySelectorAll('.feedback').forEach(s => s.innerHTML = '');
+    }
+
+    function solveRadio(containerId) {
+        const container = document.getElementById(containerId);
+        const items = container.querySelectorAll('.item');
+        items.forEach(item => {
+            const correctVal = item.dataset.correct;
+            const input = item.querySelector(`input[value="${correctVal}"]`);
+            if(input) input.checked = true;
+            item.querySelector('.feedback').innerHTML = ''; // Clear feedback to avoid confusion
+        });
+        checkRadio(containerId);
+    }
+
+    /* --- Drag Logic (Ex 2, 8) --- */
+    function checkDrag(containerId) {
+        const container = document.getElementById(containerId);
+        const draggables = container.querySelectorAll('.draggable');
+        draggables.forEach(el => {
+            const parent = el.parentElement;
+            if (parent.classList.contains('source-zone')) return; // Not moved yet
+            
+            const targetId = el.dataset.target;
+            const isCorrect = parent.id === targetId;
+            setFeedback(el, isCorrect);
+        });
+    }
+
+    function resetDrag(containerId, sourceId) {
+        const container = document.getElementById(containerId);
+        const source = document.getElementById(sourceId);
+        const draggables = container.querySelectorAll('.draggable');
+        draggables.forEach(el => {
+            source.appendChild(el);
+            el.classList.remove('correct-bg', 'incorrect-bg');
+        });
+    }
+
+    function solveDrag(containerId) {
+        const container = document.getElementById(containerId);
+        const draggables = container.querySelectorAll('.draggable');
+        draggables.forEach(el => {
+            const targetId = el.dataset.target;
+            document.getElementById(targetId).appendChild(el);
+        });
+        checkDrag(containerId);
+    }
+
+    /* --- Input Logic (Ex 3, 10) --- */
+    function checkInput(containerId) {
+        const container = document.getElementById(containerId);
+        const inputs = container.querySelectorAll('input[type="text"]');
+        inputs.forEach(inp => {
+            const val = inp.value.trim().toLowerCase();
+            const correct = inp.dataset.correct.toLowerCase();
+            const span = inp.nextElementSibling;
+            const isCorrect = val === correct;
+            setFeedback(inp, isCorrect);
+            setSpanMsg(span, isCorrect);
+        });
+    }
+
+    function resetInput(containerId) {
+        const container = document.getElementById(containerId);
+        const inputs = container.querySelectorAll('input[type="text"]');
+        inputs.forEach(inp => {
+            inp.value = '';
+            inp.classList.remove('correct-bg', 'incorrect-bg');
+            inp.nextElementSibling.innerHTML = '';
+        });
+    }
+
+    function solveInput(containerId) {
+        const container = document.getElementById(containerId);
+        const inputs = container.querySelectorAll('input[type="text"]');
+        inputs.forEach(inp => {
+            inp.value = inp.dataset.correct;
+        });
+        checkInput(containerId);
+    }
+
+    /* --- Select Logic (Ex 4, 6, 9) --- */
+    function checkSelect(containerId) {
+        const container = document.getElementById(containerId);
+        const selects = container.querySelectorAll('select');
+        selects.forEach(sel => {
+            const val = sel.value;
+            const correct = sel.dataset.correct;
+            const span = sel.nextElementSibling;
+            if(val === "") return;
+            const isCorrect = val === correct;
+            setFeedback(sel, isCorrect);
+            setSpanMsg(span, isCorrect);
+        });
+    }
+
+    function resetSelect(containerId) {
+        const container = document.getElementById(containerId);
+        const selects = container.querySelectorAll('select');
+        selects.forEach(sel => {
+            sel.value = "";
+            sel.classList.remove('correct-bg', 'incorrect-bg');
+            sel.nextElementSibling.innerHTML = "";
+        });
+    }
+
+    function solveSelect(containerId) {
+        const container = document.getElementById(containerId);
+        const selects = container.querySelectorAll('select');
+        selects.forEach(sel => sel.value = sel.dataset.correct);
+        checkSelect(containerId);
+    }
+
+    /* --- Click Select Logic (Ex 7) --- */
+    function toggleSelect(el) {
+        el.classList.toggle('selected');
+    }
+
+    function checkClick(containerId, targetGender) {
+        const container = document.getElementById(containerId);
+        const words = container.querySelectorAll('.clickable-word');
+        words.forEach(word => {
+            const isSelected = word.classList.contains('selected');
+            const isTarget = word.dataset.gender === targetGender;
+            
+            word.classList.remove('correct-bg', 'incorrect-bg');
+            
+            if (isTarget && isSelected) {
+                word.classList.add('correct-bg'); // Richtig gewählt
+            } else if (!isTarget && isSelected) {
+                word.classList.add('incorrect-bg'); // Falsch gewählt
+            } else if (isTarget && !isSelected) {
+                word.style.border = "2px solid red"; // Vergessen
+            } else {
+                word.style.border = "1px solid #ccc"; // Richtig nicht gewählt
+            }
+        });
+    }
+
+    function resetClick(containerId) {
+        const container = document.getElementById(containerId);
+        const words = container.querySelectorAll('.clickable-word');
+        words.forEach(word => {
+            word.classList.remove('selected', 'correct-bg', 'incorrect-bg');
+            word.style.border = "1px solid #ccc";
+        });
+    }
+
+    function solveClick(containerId, targetGender) {
+        resetClick(containerId);
+        const container = document.getElementById(containerId);
+        const words = container.querySelectorAll('.clickable-word');
+        words.forEach(word => {
+            if (word.dataset.gender === targetGender) {
+                word.classList.add('selected');
+                word.classList.add('correct-bg');
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
